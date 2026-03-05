@@ -62,8 +62,8 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
     
-<script src="https://unpkg.com"></script>
-<script src="https://cdn.ethers.io" type="application/javascript"></script>
+<script src="https://cdnjs.cloudflare.com"></script>
+<script src="https://cdn.jsdelivr.net"></script>
     
 </head>
 <body class="pb-20">
@@ -219,44 +219,49 @@
         let provider, signer, contract;
 
         async function init() {
-    AOS.init(); 
-
-    async function init() {
     AOS.init();
 
-    const sdk = new ThirdwebSDK("binance"); 
-
-    const connectBtnContainer = document.getElementById('thirdweb-connect');
+    const connectContainer = document.getElementById('thirdweb-connect');
     
-    
-    connectBtnContainer.innerHTML = `
-        <button id="realConnectBtn" class="btn-gradient px-6 py-2 rounded-xl font-bold text-sm">
-            Connect Wallet
-        </button>
-    `;
+    // MEMAKSA TOMBOL MUNCUL SECARA VISUAL
+    if (connectContainer) {
+        connectContainer.innerHTML = `
+            <button id="realConnectBtn" class="btn-gradient px-4 py-2 rounded-xl font-bold text-xs">
+                Connect Wallet
+            </button>
+        `;
+    }
 
+    // LOGIKA KONEKSI SAAT DIKLIK
     document.getElementById('realConnectBtn').onclick = async () => {
+        if (!window.ethereum) {
+            alert("Buka situs ini di dalam Browser MetaMask/Trust Wallet!");
+            return;
+        }
+
         try {
-            // Meminta koneksi dompet (MetaMask/Trust Wallet)
-            const walletAddress = await sdk.wallet.connect();
-            document.getElementById('realConnectBtn').innerText = walletAddress.substring(0,6) + "..." + walletAddress.substring(38);
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            const signer = provider.getSigner();
+            const addr = await signer.getAddress();
+
+            // Ganti teks tombol dengan alamat wallet
+            document.getElementById('realConnectBtn').innerText = addr.substring(0, 6) + "..." + addr.substring(38);
             
-            // Inisialisasi Kontrak
-            contract = await sdk.getContract(contractAddress);
+            // Hubungkan ke Kontrak Ricky Brut
+            contract = new ethers.Contract(contractAddress, abi, signer);
             
-            generateRefLink(walletAddress);
+            generateRefLink(addr);
             getReferrerFromURL();
             updateUI();
             setInterval(updateUI, 15000);
             
-            alert("Terhubung: " + walletAddress);
-        } catch (err) {
-            console.error(err);
-            alert("Gagal konek! Pastikan buka di Browser MetaMask/Trust Wallet.");
+            console.log("Connected: " + addr);
+        } catch (error) {
+            alert("Koneksi Gagal: " + error.message);
         }
     };
 }
-        
         async function updateUI() {
             if (!contract) return;
             const addr = await signer.getAddress();
