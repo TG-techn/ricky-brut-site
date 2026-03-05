@@ -62,10 +62,8 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
     
-    <script type="module">
-  import { createThirdwebClient } from "https://esm.sh";
-  window.thirdweb = { createThirdwebClient };
-</script>
+<script src="https://unpkg.com"></script>
+<script src="https://cdn.ethers.io" type="application/javascript"></script>
     
 </head>
 <body class="pb-20">
@@ -223,32 +221,42 @@
         async function init() {
     AOS.init(); 
 
-    const client = window.thirdweb.createThirdwebClient({
-        clientId: "e5c255fc01874efbab88c89ed9890f8e" 
-    });
+    async function init() {
+    AOS.init();
+
+    const sdk = new ThirdwebSDK("binance"); 
+
+    const connectBtnContainer = document.getElementById('thirdweb-connect');
+    
+    
+    connectBtnContainer.innerHTML = `
+        <button id="realConnectBtn" class="btn-gradient px-6 py-2 rounded-xl font-bold text-sm">
+            Connect Wallet
+        </button>
+    `;
+
+    document.getElementById('realConnectBtn').onclick = async () => {
+        try {
+            // Meminta koneksi dompet (MetaMask/Trust Wallet)
+            const walletAddress = await sdk.wallet.connect();
+            document.getElementById('realConnectBtn').innerText = walletAddress.substring(0,6) + "..." + walletAddress.substring(38);
             
-    const { createConnectEmbed } = await import("https://esm.sh");
-
-    createConnectEmbed({
-        client: client,
-        target: document.getElementById("thirdweb-connect"),
-        wallets: [
-            "io.metamask",
-            "com.coinbase.wallet",
-            "google",
-            "apple",
-            "x",
-            "discord"
-        ],
-        theme: "dark",
-        chain: { id: 56 }, 
-        modalSize: "compact"
-    });
-
-    setInterval(updateUI, 15000);
+            // Inisialisasi Kontrak
+            contract = await sdk.getContract(contractAddress);
+            
+            generateRefLink(walletAddress);
+            getReferrerFromURL();
+            updateUI();
+            setInterval(updateUI, 15000);
+            
+            alert("Terhubung: " + walletAddress);
+        } catch (err) {
+            console.error(err);
+            alert("Gagal konek! Pastikan buka di Browser MetaMask/Trust Wallet.");
         }
+    };
+}
         
-
         async function updateUI() {
             if (!contract) return;
             const addr = await signer.getAddress();
