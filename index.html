@@ -64,9 +64,8 @@
     
     <script type="module">
   import { createThirdwebClient } from "https://esm.sh";
-  import { ConnectButton } from "https://esm.sh/react";
-  window.thirdweb = { createThirdwebClient, ConnectButton };
-    </script>
+  window.thirdweb = { createThirdwebClient };
+</script>
     
 </head>
 <body class="pb-20">
@@ -222,38 +221,33 @@
         let provider, signer, contract;
 
         async function init() {
-    AOS.init();
-    const client = window.thirdweb.createThirdwebClient({
-        clientId: "e5c255fc01874efbab88c89ed9890f8e"
-    });
+    AOS.init(); 
 
-    window.thirdweb.ConnectButton({
+    const client = window.thirdweb.createThirdwebClient({
+        clientId: "e5c255fc01874efbab88c89ed9890f8e" 
+    });
+            
+    const { createConnectEmbed } = await import("https://esm.sh");
+
+    createConnectEmbed({
         client: client,
         target: document.getElementById("thirdweb-connect"),
         wallets: [
-            "io.metamask", 
-            "com.coinbase.wallet", 
-            "me.rainbow", 
-            "google", 
-            "apple", 
-            "x", 
+            "io.metamask",
+            "com.coinbase.wallet",
+            "google",
+            "apple",
+            "x",
             "discord"
         ],
         theme: "dark",
-        connectModal: { size: "compact" },
-        chain: { id: 56 }, {
-        onConnect: async (account)
-            
-            const addr = account.address;
-            console.log("Terhubung ke: " + addr);
-            
-            generateRefLink(addr);
-            getReferrerFromURL();
-            updateUI(); 
-            setInterval(updateUI, 15000);
-        }
+        chain: { id: 56 }, 
+        modalSize: "compact"
     });
-}
+
+    setInterval(updateUI, 15000);
+        }
+        
 
         async function updateUI() {
             if (!contract) return;
